@@ -19,10 +19,9 @@ const SplashScreen = ({ navigation }) => {
         if (isLoggedIn) {
             if (user.role == 'user') {
                 navigation.replace('UserStack')
-            } else if (user.role == 'vendor') {
-
+            } else if (user.role == 'Vendor') {
+                navigation.replace('VendorStack')
             } else if (user.role == 'sales') {
-
             }
         } else {
             navigation.replace('RoleSelector')

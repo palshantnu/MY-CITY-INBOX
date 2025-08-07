@@ -88,14 +88,18 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
         }
     };
     const handleLogin = async () => {
-        // if (!mobile || !password) return alert('Please fill in all fields.');
-     
+        console.log('role', role);
+        // if (role =='Vendor') {
+        //     navigation.navigate('VendorStack')
+        // }
+        if (!mobile || !password) return alert('Please fill in all fields.');
+
         // TODO: Handle actual login
         let fcmToken = await getSyncData('fcmToken');
         // TODO: API call or validation
         const body = { password, mobile, device_token: fcmToken }
         console.log('Login:', body);
-        const res = await postData(role == 'User' ? 'users-login' : null, body);
+        const res = await postData(role == 'User' ? 'users-login' : role == 'Vendor' ? 'vendor-login' : null, body);
         console.log('res', res);
         ToastAndroid.show(res.message, ToastAndroid.SHORT);
         if (res.message == 'Login successful') {
@@ -109,6 +113,18 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
                     CommonActions.reset({
                         index: 1,
                         routes: [{ name: 'UserStack' }],
+                    }),
+                );
+            } else if (role == 'Vendor') {
+                dispatch({
+                    type: 'SET_USER',
+                    payload: res.vendor,
+                });
+
+                navigation.dispatch(
+                    CommonActions.reset({
+                        index: 1,
+                        routes: [{ name: 'VendorStack' }],
                     }),
                 );
             }
@@ -155,7 +171,7 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
                         onChangeText={setMobile}
                         style={styles.input}
                         keyboardType="phone-pad"
-                        maxLength={10}
+                        maxLength={153}
                     />
                 </View>
 

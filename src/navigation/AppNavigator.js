@@ -4,7 +4,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import RoleSelector from '../auth/RoleSelector';
 import LoginScreen from '../auth/LoginScreen';
 import UserStack from './UserStack';
-import VendorStack from './VendorStack';
 import SalesStack from './SalesStack';
 import RegisterUser from '../auth/RegisterUser';
 import RegisterVendor from '../auth/RegisterVendor';
@@ -13,6 +12,7 @@ import SplashScreen from '../screens/Splashscreen';
 import AboutScreen from '../screens/Common/AboutScreen';
 import PrivacyPolicyScreen from '../screens/Common/PrivacyPolicyScreen';
 import TermsAndConditionsScreen from '../screens/Common/TermsAndConditionsScreen';
+import VendorStack from './VendorStack';
 
 const Stack = createNativeStackNavigator();
 
@@ -40,6 +40,9 @@ const AppNavigator = () => (
     <Stack.Screen options={{
       headerShown: false
     }} name="UserStack" component={UserStack} />
+    <Stack.Screen options={{
+      headerShown: false
+    }} name="VendorStack" component={VendorStack} />
     <Stack.Screen options={{
       headerShown: false
     }} name="AboutScreen" component={AboutScreen} />

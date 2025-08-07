@@ -30,11 +30,11 @@ const MainContent = () => {
             backgroundColor: '#2980b9',
           }}
         >
-          <StatusBar
+          {/* <StatusBar
             animated={true}
             backgroundColor={'#2980b9'}
             barStyle="dark-content"
-          />
+          /> */}
           <AppNavigator />
         </SafeAreaView>
       </NavigationContainer>

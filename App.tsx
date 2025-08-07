@@ -15,16 +15,16 @@ const App = () => {
 
   return (
     <Provider store={store}>
-    <PersistGate loading={null} persistor={persistor}>
-    <SafeAreaProvider>
-      <StatusBar animated={true}
-        barStyle="dark-content" 
-      backgroundColor={'#2980b9'}/>
-      <PaperProvider>
-          <MainContent />
-      </PaperProvider>
-    </SafeAreaProvider>
-    </PersistGate>
+      <PersistGate loading={null} persistor={persistor}>
+        <StatusBar animated={true}
+          barStyle="dark-content"
+          backgroundColor={'#2980b9'} />
+        <SafeAreaProvider>
+          <PaperProvider>
+            <MainContent />
+          </PaperProvider>
+        </SafeAreaProvider>
+      </PersistGate>
     </Provider>
   );
 };

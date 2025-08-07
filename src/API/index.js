@@ -17,6 +17,22 @@ const getData = async url => {
     return null;
   }
 };
+const deleteData = async (url, body) => {
+  try {
+    const response = await fetch(`${ServerURL}/${url}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json;charset=utf-8',
+      },
+      body: JSON.stringify(body),
+    });
+    const result = await response.json();
+    return result;
+  } catch (e) {
+    console.log('deleteData error:', e);
+    return null;
+  }
+};
 
 const postData = async (url, body) => {
   try {
@@ -87,4 +103,4 @@ const apiCall = async (route, method, data) => {
   return await fetch(url, options);
 };
 
-export {ServerURL, getData,  postData, apiCall, postFormData,postDataAndImage};
+export {ServerURL, getData,  postData, apiCall, postFormData,postDataAndImage,deleteData};

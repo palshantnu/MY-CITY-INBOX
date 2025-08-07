@@ -1,78 +1,102 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
-  Image,
   TouchableOpacity,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { baseURL, postData } from '../../API';
+import { baseURL, postData, getData, deleteData } from '../../API';
 import FastImage from 'react-native-fast-image';
 import { useSelector } from 'react-redux';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 2; // 16 padding on both sides + 16 gap between cards
+const CARD_WIDTH = (width - 48) / 2;
 
-
-const NearbyScreen = ({navigation}) => {
-  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
+const NearbyScreen = ({ navigation }) => {
+  const [bookmarkedIds, setBookmarkedIds] = useState([]);
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const user = useSelector(state => state.user);
-  
-  const toggleBookmark = (id: string) => {
-    setBookmarkedIds((prev) =>
-      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
-    );
-  };
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
 
-        const storeRes = await postData('vendors', {
-          city: user.city,
-          state: user.state,
-        });
-        const vendorData = storeRes.data || [];
-        setStores(vendorData);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // fetch stores
+      const storeRes = await postData('vendors', {
+        city: user.city,
+        state: user.state,
+      });
+      const vendorData = storeRes.data || [];
+      setStores(vendorData);
 
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setLoading(false);
+      // fetch bookmarks for user
+      if (user?.id) {
+        const bmRes = await getData(`bookmark/list?user_id=${user.id}`);
+        const ids = (bmRes.data || []).map(b => String(b.vendor_id ?? b.vendor?.id ?? b.id));
+        setBookmarkedIds(ids);
       }
-    };
-    fetchData();
-  }, []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      Alert.alert('Error', 'Failed to load stores or bookmarks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchData();
+    }, [user?.id])
+  );
+
+  const toggleBookmark = async (id) => {
+    if (!user?.id) {
+      Alert.alert('Login required', 'Please login to bookmark stores.');
+      return;
+    }
+
+    const strId = String(id);
+    const currentlyBookmarked = bookmarkedIds.includes(strId);
+
+    setBookmarkedIds(prev => currentlyBookmarked ? prev.filter(x => x !== strId) : [...prev, strId]);
+
+    try {
+      if (currentlyBookmarked) {
+        await deleteData('bookmark/remove', { user_id: user.id, vendor_id: id });
+      } else {
+        await postData('bookmark/add', { user_id: user.id, vendor_id: id });
+      }
+    } catch (err) {
+      console.error('Bookmark API error:', err);
+      // rollback on error
+      setBookmarkedIds(prev => currentlyBookmarked ? [...prev, strId] : prev.filter(x => x !== strId));
+      Alert.alert('Error', 'Could not update bookmark. Please try again.');
+    }
+  };
+
   const renderItem = ({ item }) => {
-    const isBookmarked = bookmarkedIds.includes(item.id);
+    const strId = String(item.id);
+    const isBookmarked = bookmarkedIds.includes(strId);
 
     return (
-      <SafeAreaView
-        edges={['left', 'right', 'top']}
-        style={{
-          flex: 1,
-        }}>
+      <View style={{ flex: 1 }}>
         <TouchableOpacity onPress={() => navigation.navigate('StoreDetails', { store: item })} style={styles.card}>
           <FastImage
             source={{
-              uri: item.images?.[0]
-                ? `${baseURL}/uploads/vendors/${item.images[0]}`
-                : 'https://cdn-icons-png.flaticon.com/128/18679/18679213.png',
+              uri: item.images?.[0] ? `${baseURL}/uploads/vendors/${item.images[0]}` : 'https://cdn-icons-png.flaticon.com/128/18679/18679213.png',
             }}
             resizeMode={FastImage.resizeMode.contain}
             style={styles.image}
           />
-          <Text style={styles.title} numberOfLines={1}>
-            {item.shop_name}
-          </Text>
-          <Text style={styles.subtitle} numberOfLines={1}>
-            {item.address}
-          </Text>
+          <Text style={styles.title} numberOfLines={1}>{item.shop_name}</Text>
+          <Text style={styles.subtitle} numberOfLines={1}>{item.address}</Text>
+
           <TouchableOpacity
             onPress={() => toggleBookmark(item.id)}
             style={styles.bookmarkButton}
@@ -84,7 +108,7 @@ const NearbyScreen = ({navigation}) => {
             />
           </TouchableOpacity>
         </TouchableOpacity>
-      </SafeAreaView>
+      </View>
     );
   };
 
@@ -92,16 +116,23 @@ const NearbyScreen = ({navigation}) => {
     <SafeAreaView style={styles.container}>
       <Text style={styles.screenTitle}>Nearby Stores</Text>
 
-      {stores.length === 0 ? (
+      {loading && (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Loading...</Text>
+        </View>
+      )}
+
+      {!loading && stores.length === 0 && (
         <View style={styles.emptyBox}>
           <Icon name="map-search-outline" size={60} color="#ccc" />
           <Text style={styles.emptyText}>No nearby stores found</Text>
         </View>
-      ) : (
+      )}
+
+      {!loading && stores.length > 0 && (
         <FlatList
-          key={2}
           data={stores}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
           numColumns={2}
           columnWrapperStyle={styles.rowBetween}
@@ -119,14 +150,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f4f6f8',
-    paddingHorizontal: 16,
+    paddingHorizontal: 16
   },
   screenTitle: {
     fontSize: 22,
     fontWeight: '700',
     color: '#2c3e50',
-    marginVertical: 20,
-    marginTop: 30
+    marginVertical: 20, marginTop: 30
   },
   list: {
     paddingBottom: 20,
@@ -134,6 +164,7 @@ const styles = StyleSheet.create({
   rowBetween: {
     justifyContent: 'space-between',
     marginBottom: 16,
+    marginTop: 0
   },
   card: {
     width: CARD_WIDTH,
@@ -162,16 +193,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#7f8c8d',
     marginVertical: 2,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  distance: {
-    marginLeft: 4,
-    fontSize: 12,
-    color: '#95a5a6',
   },
   bookmarkButton: {
     position: 'absolute',

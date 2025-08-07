@@ -14,55 +14,15 @@ import { useDispatch, useSelector } from 'react-redux';
 import { postData } from '../../API';
 
 const Settings = ({ navigation }) => {
-    const [notificationCount, setNotificationCount] = useState(0); // 🟢 Example count
-    const user = useSelector(state => state.user);
-    const isFocused = useIsFocused();
 
     const settingsOptions = [
         { label: 'About Us', icon: 'information-outline' },
         { label: 'Terms & Conditions', icon: 'file-document-outline' },
         { label: 'Privacy Policy', icon: 'shield-lock-outline' },
-        { label: 'Notifications', icon: 'bell-outline' },
-        { label: 'Help & Feedback', icon: 'help-circle-outline' },
     ];
 
 
-    const fetchNotificationCount = useCallback(async () => {
-        const body = {
-            userId: user.id
-        }
-        const res = await postData('notification-count', body);
-        setNotificationCount(res.count)
 
-    }, []);
-    useEffect(() => {
-        if (isFocused) {
-            fetchNotificationCount();
-        }
-    }, [isFocused, fetchNotificationCount]);
-
-    const markNotificationsSeen = async () => {
-        const body = {
-            userId: user.id
-        }
-        try {
-
-            const res = await fetch('http://192.168.29.53:5050/api/seen/all', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-
-            const json = await res.json();
-            fetchNotificationCount();
-        } catch (err) {
-            console.log(err);
-
-            Alert.alert('Error', 'Something went wrong');
-        } finally {
-
-        }
-    };
     const handlePress = async (label: string) => {
         console.log(`Pressed: ${label}`);
         if (label == 'About Us') {
@@ -75,11 +35,6 @@ const Settings = ({ navigation }) => {
             navigation.navigate('UserProfileScreen')
         } else if (label == 'Help & Feedback') {
             navigation.navigate('HelpFeedbackScreen')
-        } else if (label === 'Notifications') {
-            // mark unseen as seen (limit up to 10 on server), then navigate
-            // mark first so badge clears immediately; you can also mark on Notifications screen mount instead
-            await markNotificationsSeen();
-            navigation.navigate('NotificationsScreen');
         }
         // Add navigation logic here
     };
@@ -116,8 +71,8 @@ const Settings = ({ navigation }) => {
                     <Icon name="account-outline" size={30} color="#2980b9" />
                 </View>
                 <View style={{ flex: 1 }}>
-                    <Text style={styles.profileName}>{user.name}</Text>
-                    <Text style={styles.profileEmail}>{user.email}</Text>
+                    <Text style={styles.profileName}>{'user.name'}</Text>
+                    <Text style={styles.profileEmail}>{'user.email'}</Text>
                 </View>
                 <Icon name="chevron-right" size={22} color="#ccc" />
             </TouchableOpacity>
@@ -135,11 +90,7 @@ const Settings = ({ navigation }) => {
 
                         <Text style={styles.label}>{item.label}</Text>
 
-                        {item.label === 'Notifications' && notificationCount > 0 && (
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>{notificationCount}</Text>
-                            </View>
-                        )}
+
 
                         <Icon name="chevron-right" size={22} color="#ccc" />
                     </TouchableOpacity>
