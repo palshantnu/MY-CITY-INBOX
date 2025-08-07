@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "135930947611",
+    "project_id": "my-city-inbox",
+    "storage_bucket": "my-city-inbox.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:135930947611:android:172349f7e73daaf821b0be",
+        "android_client_info": {
+          "package_name": "com.my_city_inbox"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlxY0YhSeSLr6a9HI20BMwN2g1aiMtM2Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

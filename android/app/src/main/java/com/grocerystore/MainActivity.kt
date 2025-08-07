@@ -1,4 +1,4 @@
-package com.grocerystore
+package com.my_city_inbox
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
