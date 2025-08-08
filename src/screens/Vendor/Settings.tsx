@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { postData } from '../../API';
 
 const Settings = ({ navigation }) => {
-
+    const user = useSelector(state => state.user);
     const settingsOptions = [
         { label: 'About Us', icon: 'information-outline' },
         { label: 'Terms & Conditions', icon: 'file-document-outline' },
@@ -32,7 +32,7 @@ const Settings = ({ navigation }) => {
         } else if (label == 'Terms & Conditions') {
             navigation.navigate('TermsAndConditionsScreen')
         } else if (label == 'Profile') {
-            navigation.navigate('UserProfileScreen')
+            navigation.navigate('UpdateVendor')
         } else if (label == 'Help & Feedback') {
             navigation.navigate('HelpFeedbackScreen')
         }
@@ -71,8 +71,7 @@ const Settings = ({ navigation }) => {
                     <Icon name="account-outline" size={30} color="#2980b9" />
                 </View>
                 <View style={{ flex: 1 }}>
-                    <Text style={styles.profileName}>{'user.name'}</Text>
-                    <Text style={styles.profileEmail}>{'user.email'}</Text>
+                    <Text style={styles.profileName}>{'Update Shop Details'}</Text>
                 </View>
                 <Icon name="chevron-right" size={22} color="#ccc" />
             </TouchableOpacity>

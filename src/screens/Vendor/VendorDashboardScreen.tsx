@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -16,6 +16,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 import { baseURL, getData } from '../../API';
 import { useSelector } from 'react-redux';
+import { useFocusEffect } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -24,16 +25,13 @@ const VendorDashboardScreen: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     const user = useSelector(state => state.user);
-    const vendorId = user.id; 
-    useEffect(() => {
-        fetchVendorData();
-    }, []);
+    const vendorId = user.id;
 
     const fetchVendorData = async () => {
         try {
             const response = await getData(`vendor/${vendorId}`);
             console.log(response);
-            
+
             if (response.success) {
                 const v = response.vendor;
                 setVendor({
@@ -58,14 +56,14 @@ const VendorDashboardScreen: React.FC = () => {
             setLoading(false);
         }
     };
-
-    const handleLogoutPress = () => {
-        Alert.alert('Logout', 'Vendor has been logged out.');
-    };
-
-    const handleUpdatePress = () => {
-        Alert.alert('Navigate', 'Navigate to Update Shop Details screen.');
-    };
+    useEffect(() => {
+        fetchVendorData();
+    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchVendorData();
+        }, [])
+    );
 
     if (loading) {
         return (
