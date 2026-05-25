@@ -20,6 +20,9 @@ const UserProfileScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const user = useSelector(state => state.user);
+  console.log('====================================');
+  console.log(user);
+  console.log('====================================');
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const [profile, setProfile] = useState({
@@ -34,7 +37,7 @@ const UserProfileScreen: React.FC = () => {
   const [cities, setCities] = useState<string[]>([]);
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`http://192.168.29.53:5050/api/profile?id=${user.id}`);
+      const res = await fetch(`https://mycityinbox.com/api/profile?id=${user.id}`);
       const json = await res.json();
 
       if (json.success) {
@@ -61,7 +64,7 @@ const UserProfileScreen: React.FC = () => {
   // Fetch states
   const fetchStates = async () => {
     try {
-      const res = await fetch('http://192.168.29.53:5050/api/states');
+      const res = await fetch('https://mycityinbox.com/api/states');
       const json = await res.json();
       setStates(json.states || []);
     } catch (err) {
@@ -81,7 +84,7 @@ const UserProfileScreen: React.FC = () => {
 
   const fetchCities = async (state: string) => {
     try {
-      const res = await fetch(`http://192.168.29.53:5050/api/cities?state=${encodeURIComponent(state)}`);
+      const res = await fetch(`https://mycityinbox.com/api/cities?state=${encodeURIComponent(state)}`);
       const json = await res.json();
       setCities(json.cities || []);
     } catch (err) {
@@ -101,7 +104,7 @@ const UserProfileScreen: React.FC = () => {
 
     try {
       setSaving(true);
-      const res = await fetch('http://192.168.29.53:5050/api/update-profile', {
+      const res = await fetch('https://mycityinbox.com/api/update-profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profile)

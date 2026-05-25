@@ -92,14 +92,14 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
         // if (role =='Vendor') {
         //     navigation.navigate('VendorStack')
         // }
-        if (!mobile || !password) return alert('Please fill in all fields.');
+        if (!mobile) return alert('Please fill in all fields.');
 
         // TODO: Handle actual login
         let fcmToken = await getSyncData('fcmToken');
         // TODO: API call or validation
         const body = { password, mobile, device_token: fcmToken }
         console.log('Login:', body);
-        const res = await postData(role == 'User' ? 'users-login' : role == 'Vendor' ? 'vendor-login' : null, body);
+        const res = await postData(role == 'User' ? 'users-login' : role == 'Vendor' ? 'vendor-login' : 'sales-login', body);
         console.log('res', res);
         ToastAndroid.show(res.message, ToastAndroid.SHORT);
         if (res.message == 'Login successful') {
@@ -125,6 +125,18 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
                     CommonActions.reset({
                         index: 1,
                         routes: [{ name: 'VendorStack' }],
+                    }),
+                );
+            } else {
+                dispatch({
+                    type: 'SET_USER',
+                    payload: res.salesExecutive,
+                });
+
+                navigation.dispatch(
+                    CommonActions.reset({
+                        index: 1,
+                        routes: [{ name: 'SalesStack' }],
                     }),
                 );
             }
@@ -154,7 +166,7 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
         >
             <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
                 <Image
-                    source={{ uri: 'https://cdn-icons-png.flaticon.com/256/5175/5175213.png' }}
+                    source={require('../../assets/images/loginimage.jpeg')}
                     style={styles.image}
                     resizeMode="contain"
                 />
@@ -176,7 +188,7 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
                 </View>
 
 
-                <View style={styles.inputWrapper}>
+                {/* <View style={styles.inputWrapper}>
                     <Icon name="lock-outline" size={20} color="#888" style={styles.icon} />
                     <TextInput
                         placeholder="Password"
@@ -190,7 +202,7 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
                     <TouchableOpacity onPress={() => setSecure(!secure)}>
                         <Icon name={secure ? 'eye-off-outline' : 'eye-outline'} size={20} color="#888" />
                     </TouchableOpacity>
-                </View>
+                </View> */}
 
                 <TouchableOpacity style={{ width: '95%' }} onPress={handleLogin}>
                     <LinearGradient
@@ -203,9 +215,9 @@ const LoginScreen: React.FC<Props> = ({ route, navigation }) => {
                     </LinearGradient>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.forgot}>
+                {/* <TouchableOpacity style={styles.forgot}>
                     <Text style={styles.forgotText}>Forgot Password?</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <TouchableOpacity
                     style={{ marginTop: 24 }}
                     onPress={() => role == 'User' ? navigation.navigate('RegisterUser') : role == 'Vendor' ? navigation.navigate('RegisterVendor') : navigation.navigate('RegisterSales')}

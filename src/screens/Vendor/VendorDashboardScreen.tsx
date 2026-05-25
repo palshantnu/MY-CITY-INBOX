@@ -20,13 +20,24 @@ import { useFocusEffect } from '@react-navigation/native';
 
 const screenWidth = Dimensions.get('window').width;
 
-const VendorDashboardScreen: React.FC = () => {
+const VendorDashboardScreen: React.FC = ({ navigation }) => {
     const [vendor, setVendor] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     const user = useSelector(state => state.user);
     const vendorId = user.id;
+    const fetchActivePlan = async () => {
+        try {
+            const res = await axios.get(`https://mycityinbox.com/api/vendor/${vendorId}/plan`);
+            console.log('res==>', res.data.vendorPlan);
+            if (res.data.vendorPlan == null) {
+                navigation.navigate('VendorPlanList')
+            }
 
+        } catch (err) {
+            console.error(err);
+        }
+    };
     const fetchVendorData = async () => {
         try {
             const response = await getData(`vendor/${vendorId}`);
@@ -34,6 +45,8 @@ const VendorDashboardScreen: React.FC = () => {
 
             if (response.success) {
                 const v = response.vendor;
+                console.log('v==>', v);
+
                 setVendor({
                     shop_name: v.shop_name,
                     address: v.address,
@@ -47,6 +60,8 @@ const VendorDashboardScreen: React.FC = () => {
                     images: v.images?.map((img: string) => `${baseURL}/uploads/vendors/${img}`) || [],
                     created_by: v.created_by,
                     created_at: v.created_at,
+                    referral_code: v.referral_code,
+                    wallet_balance: v.wallet_balance
                 });
             }
         } catch (error) {
@@ -58,10 +73,12 @@ const VendorDashboardScreen: React.FC = () => {
     };
     useEffect(() => {
         fetchVendorData();
+        fetchActivePlan();
     }, []);
     useFocusEffect(
         useCallback(() => {
             fetchVendorData();
+
         }, [])
     );
 
@@ -88,11 +105,13 @@ const VendorDashboardScreen: React.FC = () => {
         images,
         created_by,
         created_at,
+        referral_code,
+        wallet_balance
     } = vendor;
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: '#2980b9' }} edges={['left', 'right', 'top']}>
-            <StatusBar backgroundColor="#3b82f6" barStyle="light-content" />
+            <StatusBar backgroundColor="#2980b9" barStyle="light-content" />
 
             <View style={styles.topBar}>
                 <Text style={styles.topBarTitle}>My City Inbox</Text>
@@ -138,6 +157,14 @@ const VendorDashboardScreen: React.FC = () => {
                     <Text style={styles.sectionText}>🔖 {subcategory_name}</Text>
                 </View>
 
+                <View style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Referral Code</Text>
+                    <Text style={styles.sectionText}>{referral_code}</Text>
+                </View>
+                <View style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Wallet Balance</Text>
+                    <Text style={styles.sectionText}>💰 ₹ {wallet_balance}</Text>
+                </View>
                 <View style={styles.sectionCard}>
                     <Text style={styles.sectionTitle}>Facilities</Text>
                     {facilities.split(',').map((item: string, idx: number) => (

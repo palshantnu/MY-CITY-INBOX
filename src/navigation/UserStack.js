@@ -10,6 +10,8 @@ import ShopList from '../screens/User/ShopList';
 import UserProfileScreen from '../screens/User/UserProfileScreen';
 import HelpFeedbackScreen from '../screens/Common/HelpFeedbackScreen';
 import NotificationsScreen from '../screens/User/NotificationsScreen';
+import NearbyScreen from '../screens/User/NearbyScreen';
+import SearchScreen from '../screens/User/SearchScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,6 +44,7 @@ const AppNavigator = () => (
         <Stack.Screen options={{
             headerShown: false
         }} name="NotificationsScreen" component={NotificationsScreen} />
+        <Stack.Screen options={{ title: 'Search Stores' }}  name="SearchScreen" component={SearchScreen} />
 
     </Stack.Navigator>
 );

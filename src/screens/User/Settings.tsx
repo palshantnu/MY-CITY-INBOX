@@ -22,6 +22,7 @@ const Settings = ({ navigation }) => {
         { label: 'About Us', icon: 'information-outline' },
         { label: 'Terms & Conditions', icon: 'file-document-outline' },
         { label: 'Privacy Policy', icon: 'shield-lock-outline' },
+        { label: 'Contact Us', icon: 'email-outline' },
         { label: 'Notifications', icon: 'bell-outline' },
         { label: 'Help & Feedback', icon: 'help-circle-outline' },
     ];
@@ -47,7 +48,7 @@ const Settings = ({ navigation }) => {
         }
         try {
 
-            const res = await fetch('http://192.168.29.53:5050/api/seen/all', {
+            const res = await fetch('https://mycityinbox.com/api/seen/all', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
@@ -71,6 +72,8 @@ const Settings = ({ navigation }) => {
             navigation.navigate('PrivacyPolicyScreen')
         } else if (label == 'Terms & Conditions') {
             navigation.navigate('TermsAndConditionsScreen')
+        } else if (label == 'Contact Us') {                   
+            navigation.navigate('ContactUsScreen')
         } else if (label == 'Profile') {
             navigation.navigate('UserProfileScreen')
         } else if (label == 'Help & Feedback') {

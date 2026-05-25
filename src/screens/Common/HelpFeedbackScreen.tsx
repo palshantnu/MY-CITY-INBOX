@@ -39,7 +39,7 @@ const HelpFeedbackScreen: React.FC = () => {
     setLoading(true);
     try {
       // Replace with your API endpoint
-      const res = await fetch('http://192.168.29.53:5050/api/help-feedback', {
+      const res = await fetch('https://mycityinbox.com/api/help-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)

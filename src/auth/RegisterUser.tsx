@@ -8,8 +8,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { postData } from '../API';
 import { Picker } from '@react-native-picker/picker';
+import { CommonActions } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
 
-const RegisterUser = () => {
+const RegisterUser = ({navigation}) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -20,10 +22,11 @@ const RegisterUser = () => {
     const [selectedState, setSelectedState] = useState('');
     const [selectedCity, setSelectedCity] = useState('');
 
-
+  const dispatch = useDispatch();
+  
     const fetchStates = async () => {
         try {
-            const res = await fetch('http://192.168.29.53:5050/api/states');
+            const res = await fetch('https://mycityinbox.com/api/states');
             const data = await res.json();
             setStates(data.states || []);
         } catch (err) {
@@ -33,7 +36,7 @@ const RegisterUser = () => {
 
     const fetchCities = async (state: string) => {
         try {
-            const res = await fetch(`http://192.168.29.53:5050/api/cities?state=${encodeURIComponent(state)}`);
+            const res = await fetch(`https://mycityinbox.com/api/cities?state=${encodeURIComponent(state)}`);
             const data = await res.json();
             setCities(data.cities || []);
         } catch (err) {
@@ -45,14 +48,23 @@ const RegisterUser = () => {
         console.log({ name, email, password, mobile });
         // TODO: API call or validation
         const body = {
-            name, email, password, mobile, state: selectedState,
+            name, email, password:12345678, mobile, state: selectedState,
             city: selectedCity
         }
         const res = await postData('users-register', body);
         console.log('res', res);
         ToastAndroid.show(res.message, ToastAndroid.SHORT);
         if (res.message == 'User registered successfully') {
-
+             dispatch({
+                    type: 'SET_USER',
+                    payload: res.user,
+                });
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 1,
+                    routes: [{ name: 'UserStack' }],
+                }),
+            );
         }
 
     };
@@ -81,7 +93,7 @@ const RegisterUser = () => {
                 <CustomInput icon="account-outline" placeholder="Full Name" value={name} onChangeText={setName} />
                 <CustomInput icon="email-outline" placeholder="Email" value={email} onChangeText={setEmail} keyboardType="email-address" />
                 <CustomInput icon="phone-outline" placeholder="Mobile Number" value={mobile} onChangeText={setMobile} keyboardType="phone-pad" />
-                <CustomInput icon="lock-outline" placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry />
+                {/* <CustomInput icon="lock-outline" placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry /> */}
                 <View style={[styles.inputWrapper, { height: 60 }]}>
                     <Icon name="map-marker-radius" size={22} color="#7f8c8d" style={styles.icon} />
                     <Picker

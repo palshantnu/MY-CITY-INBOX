@@ -28,7 +28,7 @@ const AboutScreen: React.FC = () => {
   useEffect(() => {
     const fetchAboutContent = async () => {
       try {
-        const response = await fetch('http://192.168.29.53:5050/api/pages/about');
+        const response = await fetch('https://mycityinbox.com/api/pages/about');
         const json = await response.json();
 
         if (json.success && json.data?.content) {

@@ -16,9 +16,11 @@ import { postData } from '../../API';
 const Settings = ({ navigation }) => {
     const user = useSelector(state => state.user);
     const settingsOptions = [
+        { label: 'Subscription Plans', icon: 'calendar-month-outline' }, 
         { label: 'About Us', icon: 'information-outline' },
         { label: 'Terms & Conditions', icon: 'file-document-outline' },
         { label: 'Privacy Policy', icon: 'shield-lock-outline' },
+        
     ];
 
 
@@ -35,6 +37,8 @@ const Settings = ({ navigation }) => {
             navigation.navigate('UpdateVendor')
         } else if (label == 'Help & Feedback') {
             navigation.navigate('HelpFeedbackScreen')
+        } else if (label === 'Subscription Plans') {
+            navigation.navigate('VendorPlanList'); // Navigate to the new screen
         }
         // Add navigation logic here
     };

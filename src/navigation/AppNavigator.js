@@ -13,6 +13,7 @@ import AboutScreen from '../screens/Common/AboutScreen';
 import PrivacyPolicyScreen from '../screens/Common/PrivacyPolicyScreen';
 import TermsAndConditionsScreen from '../screens/Common/TermsAndConditionsScreen';
 import VendorStack from './VendorStack';
+import ContactUsScreen from '../screens/Common/ContactUsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -45,6 +46,9 @@ const AppNavigator = () => (
     }} name="VendorStack" component={VendorStack} />
     <Stack.Screen options={{
       headerShown: false
+    }} name="SalesStack" component={SalesStack} />
+    <Stack.Screen options={{
+      headerShown: false
     }} name="AboutScreen" component={AboutScreen} />
     <Stack.Screen options={{
       headerShown: false
@@ -52,6 +56,9 @@ const AppNavigator = () => (
     <Stack.Screen options={{
       headerShown: false
     }} name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
+    <Stack.Screen options={{
+      headerShown: false
+    }} name="ContactUsScreen" component={ContactUsScreen} />
     <Stack.Screen options={{
       headerShown: false
     }} name="SplashScreen" component={SplashScreen} />

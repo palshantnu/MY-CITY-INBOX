@@ -20,7 +20,7 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2; // padding + gap
 
 // Base URL of your API
-const BASE_URL = 'http://192.168.29.53:5050/api'; // <-- change this to your actual backend URL
+const BASE_URL = 'https://mycityinbox.com/api'; // <-- change this to your actual backend URL
 
 // Helper: GET request
 

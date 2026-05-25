@@ -22,7 +22,7 @@ const TermsAndConditionsScreen: React.FC = () => {
   useEffect(() => {
     const fetchTermsContent = async () => {
       try {
-        const response = await fetch('http://192.168.29.53:5050/api/pages/terms');
+        const response = await fetch('https://mycityinbox.com/api/pages/terms');
         const json = await response.json();
 
         if (json.success && json.data?.content) {

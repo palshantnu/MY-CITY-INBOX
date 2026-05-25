@@ -19,6 +19,7 @@ import FastImage from 'react-native-fast-image';
 import { baseURL, postData, getData } from '../../API';
 import { useSelector } from 'react-redux';
 import StarRating from 'react-native-star-rating-widget';
+import WhatsAppButton from '../../components/WhatsAppButton';
 
 const { width } = Dimensions.get('window');
 
@@ -44,13 +45,14 @@ type StoreDetailsProps = {
         address: string;
         rating?: number;
         description?: string;
-        phone?: string;
+        contact_number?: string;
         images?: string[];
         facilities?: string;
         category?: { id: number; name: string };
         subcategory?: { id: number; name: string };
         city?: string;
         state?: string;
+        address_link?: string;
       };
     };
   };
@@ -59,6 +61,7 @@ type StoreDetailsProps = {
 
 const StoreDetailsScreen: React.FC<StoreDetailsProps> = ({ route, navigation }) => {
   const { store } = route.params;
+  console.log('store', store);
 
   const [rating, setRating] = React.useState(0);
   const [review, setReview] = React.useState('');
@@ -69,13 +72,19 @@ const StoreDetailsScreen: React.FC<StoreDetailsProps> = ({ route, navigation }) 
   const userId = user.id;
 
   const openPhone = () => {
-    if (store.phone) {
-      Linking.openURL(`tel:${store.phone}`);
+    if (store.contact_number) {
+      Linking.openURL(`tel:${store.contact_number}`);
     } else {
       Alert.alert('No phone number available');
     }
   };
-
+  const openMap = () => {
+    if (store.address_link) {
+      Linking.openURL(store.address_link);
+    } else {
+      Alert.alert('Location not available');
+    }
+  };
   const submitRating = async () => {
     if (rating === 0) {
       Alert.alert('Please provide a rating');
@@ -169,6 +178,13 @@ const StoreDetailsScreen: React.FC<StoreDetailsProps> = ({ route, navigation }) 
             <Icon name="map-marker" size={20} color="#2980b9" />
             <Text style={styles.infoText}>{store.address}</Text>
           </View>
+
+          {store.address_link ? (
+            <TouchableOpacity style={styles.mapButton} onPress={openMap}>
+              <Icon name="google-maps" size={18} color="#fff" />
+              <Text style={styles.mapButtonText}>Open Location</Text>
+            </TouchableOpacity>
+          ) : null}
 
           {(store.city || store.state) && (
             <View style={styles.infoRow}>
@@ -265,6 +281,12 @@ const StoreDetailsScreen: React.FC<StoreDetailsProps> = ({ route, navigation }) 
           </View>
         </View>
       </ScrollView>
+      <WhatsAppButton
+        phoneNumber={store.contact_number} // Your WhatsApp number with country code
+        message="Hi, I need help with your app!" // Optional custom message
+        position="right" // 'right' or 'left'
+        bottomOffset={20} // Distance from bottom
+      />
     </SafeAreaView>
   );
 };
@@ -483,4 +505,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#ddd',
     opacity: 0.4,
   },
+  mapButton: {
+  marginTop: 10,
+  backgroundColor: '#2980b9',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 10,
+  borderRadius: 20,
+  alignSelf: 'flex-start',
+  paddingHorizontal: 16,
+},
+
+mapButtonText: {
+  color: '#fff',
+  marginLeft: 6,
+  fontWeight: '600',
+},
 });

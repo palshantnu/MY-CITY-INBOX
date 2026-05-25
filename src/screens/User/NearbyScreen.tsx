@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Dimensions,
   Alert,
+  RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -22,10 +24,10 @@ const NearbyScreen = ({ navigation }) => {
   const [bookmarkedIds, setBookmarkedIds] = useState([]);
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const user = useSelector(state => state.user);
 
   const fetchData = async () => {
-    setLoading(true);
     try {
       // fetch stores
       const storeRes = await postData('vendors', {
@@ -46,11 +48,18 @@ const NearbyScreen = ({ navigation }) => {
       Alert.alert('Error', 'Failed to load stores or bookmarks');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
+  // Refresh function
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchData();
+  }, [user?.id]);
+
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchData();
     }, [user?.id])
   );
@@ -112,24 +121,32 @@ const NearbyScreen = ({ navigation }) => {
     );
   };
 
+  // Loading state
+  if (loading && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.screenTitle}>Nearby Stores</Text>
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#2980b9" />
+          <Text style={styles.loadingText}>Loading nearby stores...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.screenTitle}>Nearby Stores</Text>
 
-      {loading && (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text>Loading...</Text>
-        </View>
-      )}
-
-      {!loading && stores.length === 0 && (
+      {!loading && stores.length === 0 ? (
         <View style={styles.emptyBox}>
           <Icon name="map-search-outline" size={60} color="#ccc" />
           <Text style={styles.emptyText}>No nearby stores found</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={onRefresh}>
+            <Text style={styles.retryText}>Refresh</Text>
+          </TouchableOpacity>
         </View>
-      )}
-
-      {!loading && stores.length > 0 && (
+      ) : (
         <FlatList
           data={stores}
           keyExtractor={(item) => String(item.id)}
@@ -138,6 +155,19 @@ const NearbyScreen = ({ navigation }) => {
           columnWrapperStyle={styles.rowBetween}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#2980b9']} // Android
+              tintColor="#2980b9" // iOS
+              title="Pull to refresh" // iOS
+              titleColor="#2980b9" // iOS
+            />
+          }
+          initialNumToRender={4}
+          maxToRenderPerBatch={6}
+          windowSize={3}
         />
       )}
     </SafeAreaView>
@@ -156,7 +186,8 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: '#2c3e50',
-    marginVertical: 20, marginTop: 30
+    marginVertical: 20,
+    marginTop: 30
   },
   list: {
     paddingBottom: 20,
@@ -212,5 +243,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#aaa',
     marginTop: 10,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: -50,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#666',
+  },
+  retryButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
+    backgroundColor: '#2980b9',
+    borderRadius: 8,
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });

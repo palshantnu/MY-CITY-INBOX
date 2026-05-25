@@ -17,19 +17,26 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import ImagePicker from 'react-native-image-crop-picker';
 import { Picker } from '@react-native-picker/picker';
+import { CommonActions } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { postDataAndImage } from '../API';
 
 const { width } = Dimensions.get('window');
 
-const RegisterVendor = () => {
+const RegisterVendor = ({ navigation }) => {
     // Form fields
+    const dispatch = useDispatch();
     const [shopName, setShopName] = useState('');
     const [address, setAddress] = useState('');
+    const [addressLink, setAddressLink] = useState('');
     const [contactNumber, setContactNumber] = useState('');
     const [facilities, setFacilities] = useState('');
     const [description, setDescription] = useState('');
     const [password, setPassword] = useState('');
     const [secure, setSecure] = useState(true); // toggle password visibility
     const [images, setImages] = useState<Array<{ path: string; mime?: string }>>([]);
+    const [referralCode, setReferralCode] = useState('');
+
 
     // State & City
     const [states, setStates] = useState<string[]>([]);
@@ -51,7 +58,7 @@ const RegisterVendor = () => {
 
     const fetchStates = async () => {
         try {
-            const res = await fetch('http://192.168.29.53:5050/api/states');
+            const res = await fetch('https://mycityinbox.com/api/states');
             const data = await res.json();
             setStates(data.states || []);
         } catch (error) {
@@ -61,7 +68,7 @@ const RegisterVendor = () => {
 
     const fetchCities = async (state: string) => {
         try {
-            const res = await fetch(`http://192.168.29.53:5050/api/cities?state=${encodeURIComponent(state)}`);
+            const res = await fetch(`https://mycityinbox.com/api/cities?state=${encodeURIComponent(state)}`);
             const data = await res.json();
             setCities(data.cities || []);
         } catch (error) {
@@ -79,7 +86,7 @@ const RegisterVendor = () => {
     // Fetch categories
     const fetchCategories = async () => {
         try {
-            const res = await fetch('http://192.168.29.53:5050/api/categories');
+            const res = await fetch('https://mycityinbox.com/api/categories');
             const data = await res.json();
             setCategories(data.categories || []);
         } catch (error) {
@@ -90,8 +97,11 @@ const RegisterVendor = () => {
     // Fetch subcategories on category change
     const fetchSubcategories = async (categoryId: number) => {
         try {
-            const res = await fetch(`http://192.168.29.53:5050/api/subcategories?category_id=${categoryId}`);
+            const res = await fetch(`https://mycityinbox.com/api/subcategories/${categoryId}`);
             const data = await res.json();
+            console.log('====================================');
+            console.log(data);
+            console.log('====================================');
             setSubcategories(data.subcategories || []);
         } catch (error) {
             console.log('Error fetching subcategories:', error);
@@ -101,6 +111,9 @@ const RegisterVendor = () => {
     const onCategoryChange = (categoryId: number) => {
         setSelectedCategory(categoryId);
         setSelectedSubcategory(null);
+        console.log('====================================');
+        console.log(categoryId);
+        console.log('====================================');
         if (categoryId) fetchSubcategories(categoryId);
         else setSubcategories([]);
     };
@@ -115,10 +128,16 @@ const RegisterVendor = () => {
             if (err.code !== 'E_PICKER_CANCELLED') console.log('Image error:', err);
         });
     };
+    const handleRemoveImage = (indexToRemove) => {
+        setImages(prevImages => prevImages.filter((_, index) => index !== indexToRemove));
+    };
 
     const handleRegister = async () => {
+        console.log('====================================');
+        console.log('Vendor Registration Data:', { shopName, address, contactNumber, selectedState, selectedCity, password });
+        console.log('====================================');
         try {
-            if (!shopName || !address || !contactNumber || !selectedState || !selectedCity || !password) {
+            if (!shopName || !address || !contactNumber || !selectedState || !selectedCity) {
                 Alert.alert('Please fill all required fields.');
                 return;
             }
@@ -137,44 +156,56 @@ const RegisterVendor = () => {
 
             formData.append('shop_name', shopName);
             formData.append('address', address);
+            formData.append('address_link', addressLink);
             formData.append('city', selectedCity);
             formData.append('state', selectedState);
             formData.append('contact_number', contactNumber);
             formData.append('facilities', facilities);
             formData.append('category_id', selectedCategory.toString());
             formData.append('subcategory_id', selectedSubcategory.toString());
-            formData.append('password', password);
+            formData.append('password', 12345678);
             formData.append('created_by', 'self');
             formData.append('sales_executive_id', '');
-
+            if (referralCode) {
+                formData.append('referral_code', referralCode);
+            }
             images.forEach((img, index) => {
+                const uri =
+                    Platform.OS === 'android'
+                        ? img.path
+                        : img.path.replace('file://', '');
+
                 formData.append('images', {
-                    uri: img.path,
+                    uri,
                     type: img.mime || 'image/jpeg',
-                    name: `image_${index}.jpg`
-                } as any);
+                    name: `image_${index}.jpg`,
+                });
             });
+
             console.log('formData==>', formData);
 
-            const response = await fetch('http://192.168.29.53:5050/api/vendors/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-                body: formData,
-            });
+            const result = await postDataAndImage('vendors/register', formData);
 
-            const result = await response.json();
+            // const result = await response.json();
             console.log(result);
 
-            if (response.ok) {
-                ToastAndroid.show(result.message, ToastAndroid.SHORT);
-                if (result.message == 'Vendor registered successfully') {
-                    
-                }
-            } else {
-                ToastAndroid.show(result.message, ToastAndroid.SHORT);
+
+            ToastAndroid.show(result.message, ToastAndroid.SHORT);
+            if (result.message == 'Vendor registered successfully') {
+                const vendorWithRole = { ...result.vendor, role: 'Vendor' };
+                dispatch({
+                    type: 'SET_USER',
+                    payload: vendorWithRole,
+                });
+
+                navigation.dispatch(
+                    CommonActions.reset({
+                        index: 1,
+                        routes: [{ name: 'VendorStack' }],
+                    }),
+                );
             }
+
 
         } catch (error) {
             console.error('Registration error:', error);
@@ -193,6 +224,12 @@ const RegisterVendor = () => {
                 {/* Other Inputs */}
                 <CustomInput icon="store-outline" placeholder="Shop Name" value={shopName} onChangeText={setShopName} />
                 <CustomInput icon="map-marker-outline" placeholder="Address" value={address} onChangeText={setAddress} />
+                <CustomInput
+                    icon="google-maps"
+                    placeholder="Google Map Link"
+                    value={addressLink}
+                    onChangeText={setAddressLink}
+                />
                 <CustomInput icon="phone-outline" placeholder="Contact Number" value={contactNumber} onChangeText={setContactNumber} keyboardType="phone-pad" />
                 <CustomInput icon="toolbox-outline" placeholder="Facilities" value={facilities} onChangeText={setFacilities} />
 
@@ -263,7 +300,7 @@ const RegisterVendor = () => {
                 </View>
 
                 {/* Password Input */}
-                <View style={[styles.inputWrapper, { height: 70 }]}>
+                {/* <View style={[styles.inputWrapper, { height: 70 }]}>
                     <Icon name="lock-outline" size={22} color="#7f8c8d" style={styles.icon} />
                     <TextInput
                         placeholder="Password"
@@ -277,7 +314,14 @@ const RegisterVendor = () => {
                     <TouchableOpacity onPress={() => setSecure(!secure)}>
                         <Icon name={secure ? 'eye-off-outline' : 'eye-outline'} size={22} color="#7f8c8d" />
                     </TouchableOpacity>
-                </View>
+                </View> */}
+                <CustomInput
+                    icon="account-plus-outline"
+                    placeholder="Referral Code (Optional)"
+                    value={referralCode}
+                    onChangeText={setReferralCode}
+                    autoCapitalize="words"
+                />
 
                 {/* Images */}
                 <View style={{ width: '100%', marginBottom: 16 }}>
@@ -285,11 +329,37 @@ const RegisterVendor = () => {
 
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
                         {images.map((img, index) => (
-                            <Image
-                                key={index}
-                                source={{ uri: img.path }}
-                                style={{ width: 80, height: 80, borderRadius: 8, marginRight: 10 }}
-                            />
+                            <View key={index} style={{ marginRight: 10 }}>
+                                <Image
+                                    source={{ uri: img.path }}
+                                    style={{ width: 80, height: 80, borderRadius: 8 }}
+                                />
+
+                                {/* Remove Button */}
+                                <TouchableOpacity
+                                    onPress={() => Alert.alert(
+                                        "Remove Image",
+                                        "Are you sure?",
+                                        [
+                                            { text: "Cancel" },
+                                            { text: "Remove", onPress: () => handleRemoveImage(index) }
+                                        ]
+                                    )}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: -6,
+                                        backgroundColor: '#e74c3c',
+                                        borderRadius: 12,
+                                        width: 22,
+                                        height: 22,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Text style={{ color: '#fff', fontSize: 12 }}>✕</Text>
+                                </TouchableOpacity>
+                            </View>
                         ))}
                     </ScrollView>
 
@@ -304,8 +374,8 @@ const RegisterVendor = () => {
                         <Text style={styles.buttonText}>Register</Text>
                     </LinearGradient>
                 </TouchableOpacity>
-            </ScrollView>
-        </KeyboardAvoidingView>
+            </ScrollView >
+        </KeyboardAvoidingView >
     );
 };
 

@@ -22,7 +22,7 @@ const PrivacyPolicyScreen: React.FC = () => {
   useEffect(() => {
     const fetchPrivacyContent = async () => {
       try {
-        const response = await fetch('http://192.168.29.53:5050/api/pages/privacy');
+        const response = await fetch('https://mycityinbox.com/api/pages/privacy');
         const json = await response.json();
 
         if (json.success && json.data?.content) {

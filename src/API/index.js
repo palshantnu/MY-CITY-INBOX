@@ -1,8 +1,8 @@
 import axios from "axios";
 
-export const baseURL = 'http://192.168.29.53:5050';
+export const baseURL = 'https://mycityinbox.com';
 
-var ServerURL = 'http://192.168.29.53:5050/api';
+var ServerURL = 'https://mycityinbox.com/api';
 
 // import axios from 'axios' //for react native 
 // \ var axios = require('axios'); // for react js

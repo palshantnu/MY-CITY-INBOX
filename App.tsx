@@ -16,7 +16,8 @@ const App = () => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <StatusBar animated={true}
+        <StatusBar
+         animated={true}
           barStyle="dark-content"
           backgroundColor={'#2980b9'} />
         <SafeAreaProvider>

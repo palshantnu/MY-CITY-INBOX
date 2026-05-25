@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, TouchableOpacity, FlatList, ActivityIndicator, Image } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, FlatList, ActivityIndicator, Image, RefreshControl } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,23 +9,31 @@ const AllCategory = () => {
     const navigation = useNavigation();
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
+    // Fetch data function
+    const fetchData = async () => {
+        try {
+            const categoryRes = await getData('categories');
+            const categoryData = categoryRes.categories || [];
+            setCategories(categoryData);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const categoryRes = await getData('categories');
-                const categoryData = categoryRes.categories || [];
-                setCategories(categoryData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchData();
     }, []);
 
-
+    // Refresh function
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        fetchData();
+    }, []);
 
     const renderCategoryItem = ({ item }) => (
         <TouchableOpacity
@@ -45,7 +53,7 @@ const AllCategory = () => {
                         resizeMode="cover"
                     />
                 ) : (
-                    <Icon name={item.icon || 'shopping-outline'} size={28} color="#fff" />
+                    <Icon name={item.icon || 'shopping-outline'} size={28} color="#2980b9" />
                 )}
             </View>
             <Text style={styles.categoryText} numberOfLines={1}>
@@ -66,7 +74,7 @@ const AllCategory = () => {
             </View>
 
             {/* Loader */}
-            {loading ? (
+            {loading && !refreshing ? (
                 <View style={styles.loaderContainer}>
                     <ActivityIndicator size="large" color="#2980b9" />
                 </View>
@@ -75,10 +83,21 @@ const AllCategory = () => {
                     data={categories}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderCategoryItem}
-                    numColumns={2}
+                    numColumns={3}
                     contentContainerStyle={styles.gridContainer}
                     columnWrapperStyle={{ justifyContent: 'space-between' }}
                     ListEmptyComponent={<Text style={styles.emptyText}>No categories found.</Text>}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            colors={['#2980b9']} // Android
+                            tintColor="#2980b9" // iOS
+                            title="Pull to refresh" // iOS
+                            titleColor="#2980b9" // iOS
+                        />
+                    }
+                    showsVerticalScrollIndicator={false}
                 />
             )}
         </SafeAreaView>
@@ -115,15 +134,16 @@ const styles = StyleSheet.create({
     },
     gridContainer: {
       padding: 16,
+      paddingBottom: 30,
     },
     categoryItem: {
-      width: '48%',               // Two items per row with space-between
+      width: '30%',               // Three items per row with space-between
       alignItems: 'center',
       marginBottom: 24,
     },
     iconWrapper: {
-      backgroundColor: '#fff',   // white background
-      padding: 16,
+      backgroundColor: '#f5f5f5',   // light gray background
+      padding: 6,
       borderRadius: 12,
       marginBottom: 8,
       elevation: 3,              // slight shadow on Android
@@ -158,5 +178,4 @@ const styles = StyleSheet.create({
       height: '80%',
       borderRadius: 12,       // same radius as iconWrapper
     },
-  });
-  
+});

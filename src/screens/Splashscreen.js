@@ -21,7 +21,8 @@ const SplashScreen = ({ navigation }) => {
                 navigation.replace('UserStack')
             } else if (user.role == 'Vendor') {
                 navigation.replace('VendorStack')
-            } else if (user.role == 'sales') {
+            } else if (user.role == 'Sales') {
+                navigation.replace('SalesStack')
             }
         } else {
             navigation.replace('RoleSelector')

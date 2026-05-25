@@ -6,8 +6,11 @@ import {
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import ImagePicker from 'react-native-image-crop-picker';
+import { CommonActions } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
 
-const RegisterSales = () => {
+const RegisterSales = ({ navigation }) => {
+    const dispatch = useDispatch();
     const [contact, setContact] = useState('');
     const [name, setName] = useState('');
     const [documentImage, setDocumentImage] = useState(null);
@@ -18,6 +21,7 @@ const RegisterSales = () => {
     const [ifsc, setIfsc] = useState('');
     const [password, setPassword] = useState('');
     const [secure, setSecure] = useState(true);
+    const [referralCode, setReferralCode] = useState('');
 
     const pickImage = (setter) => {
         ImagePicker.openPicker({
@@ -48,7 +52,7 @@ const RegisterSales = () => {
         formData.append('bank_account_name', accountName);
         formData.append('bank_account_number', accountNumber);
         formData.append('bank_ifsc', ifsc);
-        formData.append('password', password);
+        formData.append('password', 12345678);
         formData.append('document_file', {
             uri: documentImage.path,
             name: 'document.jpg',
@@ -62,9 +66,11 @@ const RegisterSales = () => {
                 type: passbookImage.mime
             });
         }
-
+        if (referralCode) {
+            formData.append('referral_code', referralCode);
+        }
         try {
-            const res = await fetch('http://192.168.29.53:5050/api/sales/register', {
+            const res = await fetch('https://mycityinbox.com/api/sales/register', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -74,7 +80,22 @@ const RegisterSales = () => {
 
             const json = await res.json();
             if (res.ok) {
+                const vendorWithRole = { ...json.salesExecutive, role: 'Sales' };
+                dispatch({
+                    type: 'SET_USER',
+                    payload: vendorWithRole,
+                });
+
+                navigation.dispatch(
+                    CommonActions.reset({
+                        index: 1,
+                        routes: [{ name: 'SalesStack' }],
+                    }),
+                );
+
+
                 Alert.alert('Success', 'Sales executive registered!');
+
             } else {
                 Alert.alert('Error', json.message || 'Something went wrong');
             }
@@ -93,13 +114,13 @@ const RegisterSales = () => {
             <ScrollView contentContainerStyle={styles.container}>
                 <CustomInput icon="account-outline" placeholder="Name" value={name} onChangeText={setName} />
                 <CustomInput icon="phone-outline" placeholder="Contact Number" value={contact} onChangeText={setContact} keyboardType="phone-pad" />
-                <CustomInput
+                {/* <CustomInput
                     icon="lock-outline"
                     placeholder="Password"
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={secure}
-                />
+                /> */}
                 <TouchableOpacity onPress={() => setSecure(!secure)} style={{ marginBottom: 16 }}>
                     <Text style={{ color: '#2980b9' }}>{secure ? 'Show' : 'Hide'} Password</Text>
                 </TouchableOpacity>
@@ -122,7 +143,14 @@ const RegisterSales = () => {
                 <CustomInput icon="bank-outline" placeholder="Bank Name" value={bankName} onChangeText={setBankName} />
                 <CustomInput icon="credit-card-outline" placeholder="Account Number" value={accountNumber} onChangeText={setAccountNumber} keyboardType="number-pad" />
                 <CustomInput icon="form-textbox" placeholder="IFSC Code" value={ifsc} onChangeText={setIfsc} autoCapitalize="characters" />
-
+                <CustomInput
+                    icon="tag-outline"
+                    placeholder="Referral Code (Optional)"
+                    value={referralCode}
+                    onChangeText={setReferralCode}
+                    autoCapitalize="words"
+                     
+                />
                 <TouchableOpacity onPress={handleRegister} style={{ width: '100%' }}>
                     <LinearGradient colors={['#2980b9', '#2c3e50']} style={styles.button}>
                         <Text style={styles.buttonText}>Register</Text>
@@ -136,7 +164,7 @@ const RegisterSales = () => {
 const CustomInput = ({ icon, ...props }) => (
     <View style={styles.inputWrapper}>
         <Icon name={icon} size={20} color="#7f8c8d" style={styles.icon} />
-        <TextInput style={styles.input} placeholderTextColor="#aaa" {...props} />
+        <TextInput  style={styles.input} placeholderTextColor="#aaa" {...props} />
     </View>
 );
 

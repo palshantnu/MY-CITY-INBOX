@@ -13,6 +13,7 @@ import NotificationsScreen from '../screens/User/NotificationsScreen';
 import VendorDashboardScreen from '../screens/Vendor/VendorDashboardScreen';
 import VendorTabNavigator from './VendorTabNavigator';
 import UpdateVendor from '../screens/Vendor/UpdateVendor';
+import VendorPlanList from '../screens/Vendor/VendorPlanList';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,8 @@ const VendorStack = () => (
         <Stack.Screen options={{
             headerShown: false
         }} name="UpdateVendor" component={UpdateVendor} />
+         <Stack.Screen name="VendorPlanList" component={VendorPlanList} options={{ title: 'Plan List' }} />
+
     </Stack.Navigator>
 );
 

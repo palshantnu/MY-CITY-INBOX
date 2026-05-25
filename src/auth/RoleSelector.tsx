@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 
 type Role = 'User' | 'Vendor' | 'Sales';
 
@@ -17,7 +18,8 @@ const RoleSelector = () => {
   return (
     <LinearGradient colors={['#e0f7fa', '#ffffff']} style={styles.container}>
       <View style={styles.inner}>
-        <Text style={styles.title}>Welcome to Grocery Stores</Text>
+        <Image style={{ width: 150, height: 150, alignSelf: 'center', marginBottom: 30 }} source={require('../../assets/images/logo.png')} />
+        <Text style={styles.title}>Well Come To MY CITY INBOX</Text>
         <Text style={styles.subtitle}>Select your role to get started</Text>
 
         <View style={styles.cardWrapper}>
@@ -55,7 +57,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
   },
   title: {
-    fontSize: 30,
+    fontSize: 22,
     fontWeight: '800',
     color: '#222',
     textAlign: 'center',

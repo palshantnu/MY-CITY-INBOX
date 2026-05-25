@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
     View,
     Text,
@@ -7,11 +7,12 @@ import {
     FlatList,
     ActivityIndicator,
     Image,
+    RefreshControl,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { baseURL, getData } from '../../API';  // Make sure baseURL is imported
+import { baseURL, getData } from '../../API';
 
 const SubCategory = () => {
     const navigation = useNavigation();
@@ -20,6 +21,7 @@ const SubCategory = () => {
 
     const [subcategories, setSubcategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
     const fetchSubcategories = async () => {
         try {
@@ -29,10 +31,17 @@ const SubCategory = () => {
             console.error('Failed to load subcategories:', error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     };
 
     useEffect(() => {
+        fetchSubcategories();
+    }, []);
+
+    // Refresh function
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
         fetchSubcategories();
     }, []);
 
@@ -44,7 +53,6 @@ const SubCategory = () => {
                     subcategory_id: item.id,
                 })
             }
-
             style={styles.subcategoryItem}
         >
             <View style={styles.iconWrapper}>
@@ -55,7 +63,7 @@ const SubCategory = () => {
                         resizeMode="cover"
                     />
                 ) : (
-                    <Icon name={item.icon || 'apps'} size={28} color="#fff" />
+                    <Icon name={item.icon || 'apps'} size={28} color="#2980b9" />
                 )}
             </View>
             <Text style={styles.subcategoryText} numberOfLines={1}>
@@ -75,7 +83,7 @@ const SubCategory = () => {
                 <View style={styles.rightPlaceholder} />
             </View>
 
-            {loading ? (
+            {loading && !refreshing ? (
                 <View style={styles.loaderContainer}>
                     <ActivityIndicator size="large" color="#2980b9" />
                 </View>
@@ -84,10 +92,21 @@ const SubCategory = () => {
                     data={subcategories}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderSubcategory}
-                    numColumns={2}   // changed to 2 for cleaner layout, change to 3 if needed
+                    numColumns={2}
                     contentContainerStyle={styles.gridContainer}
                     columnWrapperStyle={{ justifyContent: 'space-between' }}
                     ListEmptyComponent={<Text style={styles.emptyText}>No subcategories found.</Text>}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            colors={['#2980b9']} // Android
+                            tintColor="#2980b9" // iOS
+                            title="Pull to refresh" // iOS
+                            titleColor="#2980b9" // iOS
+                        />
+                    }
+                    showsVerticalScrollIndicator={false}
                 />
             )}
         </SafeAreaView>
@@ -124,6 +143,7 @@ const styles = StyleSheet.create({
     },
     gridContainer: {
         padding: 16,
+        paddingBottom: 30,
     },
     subcategoryItem: {
         width: '48%',        // 2 columns with space-between
@@ -131,7 +151,7 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     iconWrapper: {
-        backgroundColor: '#fff',
+        backgroundColor: '#f5f5f5',  // Light gray background
         width: '100%',
         aspectRatio: 1,       // square
         borderRadius: 12,
